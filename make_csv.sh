@@ -23,7 +23,7 @@ get_label() {
   echo "$label"
 }
 
-if [ -z "$in_dir" || -z "$og_filelist" ]; then
+if [[ -z "$in_dir" || -z "$og_filelist" ]]; then
   usage 
   exit 1
 fi
