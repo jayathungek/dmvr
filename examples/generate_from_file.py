@@ -26,6 +26,10 @@ import pandas as pd
 import tensorflow as tf
 import librosa
 
+import warnings
+warnings.filterwarnings("ignore")
+
+
 flags.DEFINE_string("csv_path", None, "Input csv")
 flags.DEFINE_string("output_path", None, "Tfrecords output path.")
 flags.DEFINE_string("video_root_path", None,
@@ -167,6 +171,7 @@ def generate_sequence_example(video_path: str,
     # Add spectrogram
     spectro = extract_spectro(video_path, start, end)
 
+
     # Add audio.
     if FLAGS.decode_audio:
         audio = extract_audio(video_path, start, end)
@@ -184,7 +189,7 @@ def generate_sequence_example(video_path: str,
 def main(argv):
     del argv
     # reads the input csv.
-    input_csv = pd.read_csv(FLAGS.csv_path)
+    input_csv = pd.read_csv(FLAGS.csv_path, quotechar='"', skipinitialspace=True)
     if FLAGS.num_shards == -1:
         num_shards = int(math.sqrt(len(input_csv)))
     else:
@@ -205,12 +210,14 @@ def main(argv):
 
     if FLAGS.shuffle_csv:
         input_csv = input_csv.sample(frac=1)
+
+    total_files = len(input_csv)
     with _close_on_exit(writers) as writers:
-        for i in range(len(input_csv)):
+        for i in range(total_files):
             print(
                 "Processing example %d of %d   (%d%%) \r" %
-                (i, len(input_csv), i * 100 / len(input_csv)),
-                end="")
+                (i, total_files, i * 100 / total_files),
+                end="" if i < total_files - 1 else "\n")
             v = input_csv["video_path"].values[i]
             s = input_csv["start"].values[i]
             e = input_csv["end"].values[i]
