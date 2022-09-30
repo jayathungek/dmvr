@@ -170,6 +170,8 @@ def generate_sequence_example(video_path: str,
 
     # Add spectrogram
     spectro = extract_spectro(video_path, start, end)
+    for freq_bin in spectro:
+        add_float_list("melspec/feature/floats", list(freq_bin), seq_example)
 
 
     # Add audio.
@@ -216,7 +218,7 @@ def main(argv):
         for i in range(total_files):
             print(
                 "Processing example %d of %d   (%d%%) \r" %
-                (i, total_files, i * 100 / total_files),
+                (i+1, total_files, (i+1) * 100 / total_files),
                 end="" if i < total_files - 1 else "\n")
             v = input_csv["video_path"].values[i]
             s = input_csv["start"].values[i]
