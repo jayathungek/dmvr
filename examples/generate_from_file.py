@@ -54,6 +54,15 @@ def _close_on_exit(writers):
             writer.close()
 
 
+def add_spectrogram(key: str, spectrogram: np.ndarray, sequence: tf.train.SequenceExample):
+    fl_spectro = sequence.feature_lists.feature_list[key]
+    spectrogram = np.moveaxis(spectrogram, 0, -1)
+    for i in range(spectrogram.shape[0]):
+        fl_spectro.feature.add().float_list.value[:] =  spectrogram[i, :]
+        # for f in spectrogram[i, :]:
+        #     fl_spectro.feature.add().float_list.value[:] = f
+
+
 def add_float_list(key: str, values: Sequence[float],
                    sequence: tf.train.SequenceExample):
     sequence.feature_lists.feature_list[key].feature.add(
@@ -170,9 +179,7 @@ def generate_sequence_example(video_path: str,
 
     # Add spectrogram
     spectro = extract_spectro(video_path, start, end)
-    for freq_bin in spectro:
-        add_float_list("melspec/feature/floats", list(freq_bin), seq_example)
-
+    add_spectrogram("melspec/feature/floats", spectro, seq_example)
 
     # Add audio.
     if FLAGS.decode_audio:
