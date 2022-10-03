@@ -3,19 +3,16 @@ import json
 
 from google.protobuf.json_format import MessageToJson
 import tensorflow as tf
+from tensorflow import python as tf_python
 
 
 def inspect(dataset):
-    print("inspecting")
-    for d in dataset.take(1):
-        ex = tf.train.Example()
-        ex.ParseFromString(d.numpy())
-        m = json.loads(MessageToJson(ex))
-        print(m['features']['feature'].keys())
-
+    for example in dataset:
+        result = tf.train.SequenceExample.FromString(example)
+        print(result)
 
 if __name__ == '__main__':
     path = sys.argv[1]
-    raw_dataset = tf.data.TFRecordDataset(path)
+    raw_dataset = tf_python.python_io.tf_record_iterator(path)
 
     inspect(raw_dataset)
