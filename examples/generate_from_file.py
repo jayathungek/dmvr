@@ -57,8 +57,10 @@ def _close_on_exit(writers):
 def add_spectrogram(key: str, spectrogram: np.ndarray, sequence: tf.train.SequenceExample):
     fl_spectro = sequence.feature_lists.feature_list[key]
     spectrogram = np.moveaxis(spectrogram, 0, -1)
-    for i in range(spectrogram.shape[0]):
-        fl_spectro.feature.add().float_list.value[:] =  spectrogram[i, :]
+    spectrogram_flat = spectrogram.flatten()
+    fl_spectro.feature.add().float_list.value[:] = spectrogram_flat
+    # for i in range(spectrogram.shape[0]):
+    #     fl_spectro.feature.add().float_list.value[:] = spectrogram[i, :]
         # for f in spectrogram[i, :]:
         #     fl_spectro.feature.add().float_list.value[:] = f
 
