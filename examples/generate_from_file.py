@@ -54,13 +54,25 @@ def _close_on_exit(writers):
             writer.close()
 
 
+def chunk_spectro(spectrogram: np.ndarray, vid_length=10, window_samples: int=100):
+    freq_bins, time_steps = spectrogram.shape
+    final = np.zeros((time_steps//window_samples, freq_bins, window_samples))
+    for t in range(vid_length):
+        sample = t*window_samples
+        chunk = spectrogram[:, sample:sample+window_samples]
+        final[t] = chunk
+    return final
+
 def add_spectrogram(key: str, spectrogram: np.ndarray, sequence: tf.train.SequenceExample):
+    # maybe it expects it in 1s chunks?
     fl_spectro = sequence.feature_lists.feature_list[key]
-    spectrogram = np.moveaxis(spectrogram, 0, -1)
-    spectrogram_flat = spectrogram.flatten()
-    fl_spectro.feature.add().float_list.value[:] = spectrogram_flat
-    # for i in range(spectrogram.shape[0]):
-    #     fl_spectro.feature.add().float_list.value[:] = spectrogram[i, :]
+    # spectrogram = np.moveaxis(spectrogram, 0, -1)
+    chunked_spectro = chunk_spectro(spectrogram, vid_length=10, window_samples=100)
+    # fl_spectro.feature.add().float_list.value[:] = spectrogram_flat
+    for i in range(chunked_spectro.shape[0]):
+        print(chunked_spectro[i].shape)
+        fl_spectro.feature.add().float_list.value[:] = chunked_spectro[i].flatten()
+        # fl_spectro.feature.add().float_list.value[:] = spectrogram[i, :]
         # for f in spectrogram[i, :]:
         #     fl_spectro.feature.add().float_list.value[:] = f
 
@@ -182,7 +194,6 @@ def generate_sequence_example(video_path: str,
     # Add spectrogram
     spectro = extract_spectro(video_path, start, end)
     add_spectrogram("melspec/feature/floats", spectro, seq_example)
-
     # Add audio.
     if FLAGS.decode_audio:
         audio = extract_audio(video_path, start, end)
