@@ -42,6 +42,7 @@ flags.DEFINE_bool("shuffle_csv", False, "Whether or not to shuffle the csv.")
 FLAGS = flags.FLAGS
 
 _JPEG_HEADER = b"\xff\xd8"
+_WINDOW_SAMPLES = 100
 
 
 @contextlib.contextmanager
@@ -54,7 +55,7 @@ def _close_on_exit(writers):
             writer.close()
 
 
-def chunk_spectro(spectrogram: np.ndarray, vid_length=10, window_samples: int=100):
+def chunk_spectro(spectrogram: np.ndarray, vid_length: int, window_samples: int):
     freq_bins, time_steps = spectrogram.shape
     final = np.zeros((time_steps//window_samples, freq_bins, window_samples)) # could have extra zeros in there?
     for t in range(vid_length):
@@ -67,8 +68,9 @@ def add_spectrogram(key: str, spectrogram: np.ndarray, sequence: tf.train.Sequen
     # maybe it expects it in 1s chunks?
     fl_spectro = sequence.feature_lists.feature_list[key]
     # spectrogram = np.moveaxis(spectrogram, 0, -1)
-    print(spectrogram.shape)
-    chunked_spectro = chunk_spectro(spectrogram, vid_length=10, window_samples=100)
+    freq_bins, time_steps = spectrogram.shape
+    video_len = time_steps//_WINDOW_SAMPLES
+    chunked_spectro = chunk_spectro(spectrogram, vid_length=video_len, window_samples=_WINDOW_SAMPLES)
     # fl_spectro.feature.add().float_list.value[:] = spectrogram_flat
     for i in range(chunked_spectro.shape[0]):
         fl_spectro.feature.add().float_list.value[:] = chunked_spectro[i].flatten()
