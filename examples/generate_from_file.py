@@ -56,7 +56,7 @@ def _close_on_exit(writers):
 
 def chunk_spectro(spectrogram: np.ndarray, vid_length=10, window_samples: int=100):
     freq_bins, time_steps = spectrogram.shape
-    final = np.zeros((time_steps//window_samples, freq_bins, window_samples))
+    final = np.zeros((time_steps//window_samples, freq_bins, window_samples)) # could have extra zeros in there?
     for t in range(vid_length):
         sample = t*window_samples
         chunk = spectrogram[:, sample:sample+window_samples]
@@ -67,10 +67,10 @@ def add_spectrogram(key: str, spectrogram: np.ndarray, sequence: tf.train.Sequen
     # maybe it expects it in 1s chunks?
     fl_spectro = sequence.feature_lists.feature_list[key]
     # spectrogram = np.moveaxis(spectrogram, 0, -1)
+    print(spectrogram.shape)
     chunked_spectro = chunk_spectro(spectrogram, vid_length=10, window_samples=100)
     # fl_spectro.feature.add().float_list.value[:] = spectrogram_flat
     for i in range(chunked_spectro.shape[0]):
-        print(chunked_spectro[i].shape)
         fl_spectro.feature.add().float_list.value[:] = chunked_spectro[i].flatten()
         # fl_spectro.feature.add().float_list.value[:] = spectrogram[i, :]
         # for f in spectrogram[i, :]:
