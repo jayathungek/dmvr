@@ -21,6 +21,7 @@ from typing import Dict, Optional, Sequence
 from absl import app
 from absl import flags
 import ffmpeg
+from ffmpeg import Error
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -131,7 +132,7 @@ def extract_frames(video_path: str,
             .filter("scale", new_width, -1)
             .output("pipe:", format="image2pipe")
     )
-    jpeg_bytes, _ = cmd.run(capture_stdout=True, quiet=True)
+    jpeg_bytes, _ = cmd.run(capture_stdout=True, capture_stderr=True, quiet=True)
     jpeg_bytes = jpeg_bytes.split(_JPEG_HEADER)[1:]
     jpeg_bytes = map(lambda x: _JPEG_HEADER + x, jpeg_bytes)
     return list(jpeg_bytes)
@@ -247,9 +248,13 @@ def main(argv):
             e = input_csv["end"].values[i]
             l = input_csv["label"].values[i] if "label" in input_csv else None
             c = input_csv["caption"].values[i] if "caption" in input_csv else None
-            seq_ex = generate_sequence_example(
-                v, s, e, label_name=l, caption=c, label_map=l_map)
-            writers[i % len(writers)].write(seq_ex.SerializeToString())
+            try:
+                seq_ex = generate_sequence_example(
+                    v, s, e, label_name=l, caption=c, label_map=l_map)
+                writers[i % len(writers)].write(seq_ex.SerializeToString())
+            except Error as e:
+                print(f"Could not process file {v}:  {e.stderr.decode('utf8')}")
+
 
 
 if __name__ == "__main__":
