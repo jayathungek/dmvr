@@ -65,6 +65,7 @@ def chunk_spectro(spectrogram: np.ndarray, vid_length: int, window_samples: int)
         final[t] = chunk
     return final
 
+
 def add_spectrogram(key: str, spectrogram: np.ndarray, sequence: tf.train.SequenceExample):
     # maybe it expects it in 1s chunks?
     fl_spectro = sequence.feature_lists.feature_list[key]
@@ -237,6 +238,7 @@ def main(argv):
         input_csv = input_csv.sample(frac=1)
 
     total_files = len(input_csv)
+    errors = []
     with _close_on_exit(writers) as writers:
         for i in range(total_files):
             print(
@@ -253,7 +255,11 @@ def main(argv):
                     v, s, e, label_name=l, caption=c, label_map=l_map)
                 writers[i % len(writers)].write(seq_ex.SerializeToString())
             except Error as e:
-                print(f"Could not process file {v}:  {e.stderr.decode('utf8')}")
+                errors.append(f"Could not process file {v}")
+
+    print(f"{len(errors)} errors:")
+    for e in errors:
+        print(e)
 
 
 
