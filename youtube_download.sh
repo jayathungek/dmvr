@@ -17,15 +17,12 @@ dl_from_id() {
   url="$yt_prefix$id"
   start="$2"
   direct_url=$(yt-dlp --youtube-skip-dash-manifest -g -f18 "$url" 2>/dev/null)
-  # video_url=$(echo "$video_audio_urls" | grep 'mime=video')
-  # audio_url=$(echo "$video_audio_urls" | grep 'mime=audio')
   if [[ -z "$direct_url"  ]]; then
     return 2 
   fi
   
-  if [ ! -f "$out_dir/$id.webm" ]; then 
+  if [ ! -f "$out_dir/$id.mp4" ]; then
     ffmpeg -hide_banner -loglevel error -nostdin -ss "$start" -t 10 -i "$direct_url" -c:v libx264 -preset slow -crf 22 "$out_dir/$id.mp4" &>/dev/null 
-    # yt-dlp --postprocessor-args "-ss $start -t 10" "$url"  -o "$out_dir/$id.webm" &>/dev/null
   fi
 
 }
