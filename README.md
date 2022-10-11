@@ -127,6 +127,6 @@ ds = factory.make_dataset(batch_size=8)
 
 DMVR can be installed with pip directly from github, with the following command:
 
-pip install git+git://github.com/deepmind/dmvr.git
+pip install git+git://github.com/jayathungek/dmvr.git
 
 Python 3.9+ is required in order for all features to be available.

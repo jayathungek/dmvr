@@ -28,7 +28,7 @@ def _parse_requirements(requirements_txt_path):
 setuptools.setup(
     name='dmvr',
     version=_VERSION,
-    url='https://github.com/deepmind/dmvr',
+    url='https://github.com/jayathungek/dmvr',
     license='Apache 2.0',
     author='DeepMind',
     description=(
